@@ -90,7 +90,7 @@ const Navbar = () => {
                                 <div className="flex items-center space-x-4 border-l pl-5">
                                     <Link to="/profile" className="flex items-center space-x-2 group">
                                         <img 
-                                            src={user?.user?.profilePic ? `http://localhost:5000/uploads/${user.user.profilePic}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
+                                            src={user?.user?.profilePic ? `https://ticketapp-od6i.onrender.com/uploads/${user.user.profilePic}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
                                             className="w-9 h-9 rounded-full border-2 border-indigo-500 object-cover" 
                                             alt="Profile"
                                         />
