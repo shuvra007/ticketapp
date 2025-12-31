@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+/* বাটন স্পার্ক বর্ডার এনিমেশন */
+.spark-border {
+  position: relative;
+}
+
+.spark-border::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(transparent, transparent, rgba(255, 255, 255, 0.6), transparent);
+  animation: rotate-spark 4s linear infinite;
+  z-index: 1;
+}
+
+@keyframes rotate-spark {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes border-rotate {
+  100% { transform: rotate(360deg); }
+}
+
+.magic-border-container {
+  position: relative;
+  overflow: hidden;
+  padding: 2px;
+  z-index: 1;
+}
+
+.magic-border-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(transparent, #6366f1, #a855f7, #ec4899, transparent 30%);
+  animation: border-rotate 4s linear infinite;
+  z-index: -1;
+}
+html {
+  scroll-behavior: smooth;
+}
+
+.footer-glow {
+  position: relative;
+}
+
+.footer-glow::after {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
