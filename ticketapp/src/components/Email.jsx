@@ -40,7 +40,6 @@ const EmailSubscription = () => {
 
   return (
     <div className="relative w-full">
-      {/* ১. কম্প্যাক্ট ইনপুট ফিল্ড */}
       <form onSubmit={handleSend} className="w-full">
         <motion.div 
           whileFocus-within={{ scale: 1.02 }}
@@ -65,7 +64,6 @@ const EmailSubscription = () => {
         </motion.div>
       </form>
 
-      {/* ২. মডার্ন ফিজিক্স পপ-আপ */}
       <AnimatePresence>
         {isOpen && (
           <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
@@ -78,7 +76,6 @@ const EmailSubscription = () => {
               className="absolute inset-0 bg-slate-900/40 backdrop-blur-md"
             />
 
-            {/* Popup Card */}
             <motion.div 
               initial={{ scale: 0.7, opacity: 0, y: 100, rotateX: 30 }}
               animate={{ scale: 1, opacity: 1, y: 0, rotateX: 0 }}
@@ -93,7 +90,6 @@ const EmailSubscription = () => {
                 <FaTimes size={18} />
               </button>
 
-              {/* Animated Success Icon */}
               <motion.div 
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}

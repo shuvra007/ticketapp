@@ -10,7 +10,6 @@ const HelpCenter = () => {
     { id: 4, title: "সচরাচর জিজ্ঞাসা", icon: <FaQuestionCircle />, color: "bg-orange-500", desc: "আপনার সাধারণ সব প্রশ্নের তাৎক্ষণিক সমাধান এখানে।" },
   ];
 
-  // Physics Transitions
   const containerVars = {
     hidden: { opacity: 0 },
     visible: { 
@@ -30,7 +29,6 @@ const HelpCenter = () => {
   return (
     <div className="min-h-screen bg-[#FDFDFF] text-slate-900 font-['Plus_Jakarta_Sans',sans-serif] pb-24 overflow-hidden">
       
-      {/* ১. Hero Section - Physics Entrance */}
       <section className="relative pt-20 pb-32 px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           

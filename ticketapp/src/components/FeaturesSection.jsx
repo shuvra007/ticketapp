@@ -103,7 +103,6 @@ const FeaturesSection = () => {
           </motion.p>
         </div>
 
-        {/* Features Grid with Advanced Animations */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {features.map((feature, index) => (
             <motion.div
@@ -120,12 +119,10 @@ const FeaturesSection = () => {
               }}
               className="relative group bg-white p-8 rounded-3xl shadow-xl hover:shadow-2xl border border-gray-100 transition-all duration-300 overflow-hidden"
             >
-              {/* Dynamic Gradient Background for Icon */}
               <div className={`text-5xl text-white ${feature.color} p-5 rounded-full inline-block mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
                 {feature.icon}
               </div>
 
-              {/* Title & Description */}
               <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-3 group-hover:text-indigo-600 transition-colors">
                 {feature.title}
               </h3>

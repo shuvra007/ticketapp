@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { FaBus, FaMapMarkerAlt, FaCalendarAlt, FaCheckCircle, FaChevronRight } from 'react-icons/fa';
 import { MdChair } from 'react-icons/md';
 import { GiSteeringWheel } from 'react-icons/gi';
-// আপনার তৈরি করা কাস্টম এপিআই ইন্টারসেপ্টর ইমপোর্ট করুন
 import api from '../autoapi'; 
 import { toast } from 'react-toastify';
 

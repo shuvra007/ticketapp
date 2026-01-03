@@ -21,13 +21,11 @@ const PrivacyPolicyFinal = () => {
     { title: "Biometric Data", date: "MAY 2026", icon: <FaFingerprint />, color: "text-blue-500" },
   ];
 
-  // ফিজিক্স কনফিগ
   const springTransition = { type: "spring", stiffness: 300, damping: 20 };
 
   return (
     <div className="min-h-screen bg-[#F0F4F8] font-['Plus_Jakarta_Sans',sans-serif] text-slate-800 pb-20 overflow-hidden">
       
-      {/* ১. হিরো সেকশন */}
       <section className="max-w-7xl mx-auto px-6 pt-20 pb-12 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <motion.div 
           initial={{ x: -100, opacity: 0 }} 
@@ -56,7 +54,6 @@ const PrivacyPolicyFinal = () => {
           </motion.div>
         </motion.div>
 
-        {/* ইলাস্ট্রেশন পার্ট (Pure CSS/Icons) */}
         <motion.div 
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
