@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaChevronDown, FaQuoteLeft, FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaPaperPlane } from 'react-icons/fa';
 import { FaBus, FaPlane, FaTrain, FaCloud, FaStar } from "react-icons/fa";
 import CTASection from './CTA';
+import { Link } from 'react-router-dom';
+import EmailSubscription from './Email';
 // --- Testimonials Data ---
 const testimonials = [
   { id: 1, name: "শুভ আহমেদ", role: "নিয়মিত যাত্রী", text: "এই সাইট থেকে টিকেট কাটা অনেক সহজ। পেমেন্ট সিস্টেমটাও খুব ফাস্ট!", avatar: "https://i.pravatar.cc/150?u=1" },
@@ -104,27 +106,34 @@ const MainFooterSection = () => {
           <div>
             <h4 className="font-black mb-6 text-xl">লিঙ্কসমূহ</h4>
             <ul className="space-y-4 text-gray-400">
-              <li className="hover:text-indigo-400 cursor-pointer transition">আমাদের সম্পর্কে</li>
-              <li className="hover:text-indigo-400 cursor-pointer transition">প্রাইভেসি পলিসি</li>
-              <li className="hover:text-indigo-400 cursor-pointer transition">শর্তাবলী</li>
+              <li onClick={() => (window.location.href = "/about")}  className="hover:text-indigo-400 cursor-pointer transition">আমাদের সম্পর্কে</li>
+              <li  onClick={() => (window.location.href = "/privacy")} className="hover:text-indigo-400 cursor-pointer transition">প্রাইভেসি পলিসি</li>
+              <li   onClick={() => (window.location.href = "/rules")}
+ className="hover:text-indigo-400 cursor-pointer transition">শর্তাবলী</li>
             </ul>
           </div>
           <div>
-            <h4 className="font-black mb-6 text-xl">সাপোর্ট</h4>
+            <h4  onClick={() => (window.location.href = "/contact")} className="font-black mb-6 text-xl">সাপোর্ট</h4>
             <ul className="space-y-4 text-gray-400">
-              <li className="hover:text-indigo-400 cursor-pointer transition">হেল্প সেন্টার</li>
-              <li className="hover:text-indigo-400 cursor-pointer transition">রিফান্ড পলিসি</li>
-              <li className="hover:text-indigo-400 cursor-pointer transition">যোগাযোগ</li>
+              <li  onClick={() => (window.location.href = "/help")} className="hover:text-indigo-400 cursor-pointer transition">হেল্প সেন্টার</li>
+              <li
+  onClick={() => (window.location.href = "/refund")}
+  className="hover:text-indigo-400 cursor-pointer transition"
+>
+  রিফান্ড পলিসি
+</li>              <li   onClick={() => (window.location.href = "/contact")}
+ className="hover:text-indigo-400 cursor-pointer transition">যোগাযোগ</li>
             </ul>
           </div>
           <div>
             <h4 className="font-black mb-6 text-xl">নিউজলেটার</h4>
-            <div className="flex bg-white/5 p-2 rounded-2xl border border-white/10 focus-within:border-indigo-500 transition">
+            {/* <div className="flex bg-white/5 p-2 rounded-2xl border border-white/10 focus-within:border-indigo-500 transition">
               <input type="email" placeholder="আপনার ইমেইল" className="bg-transparent border-none outline-none p-3 w-full" />
               <button className="bg-indigo-600 p-4 rounded-xl hover:bg-indigo-700 transition">
                 <FaPaperPlane />
               </button>
-            </div>
+            </div> */}
+            <EmailSubscription/>
             <div className="flex gap-4 mt-8">
               {[FaFacebook, FaTwitter, FaInstagram, FaLinkedin].map((Icon, i) => (
                 <motion.a key={i} whileHover={{ y: -5 }} className="text-2xl text-gray-400 hover:text-indigo-500 cursor-pointer transition">

@@ -13,6 +13,12 @@ import VerifyOtp from './pages/VerifyOtp';
 import Navbar from './components/Navbar'; 
 import Home from './pages/Home';      
 import BusTicket from './pages/BusTicket';
+import RefundJourney from './pages/Refund';
+import ContactUs from './pages/Contact';
+import RulesPage from './components/Rule';
+import HelpCenter from './pages/Help';
+import PrivacyPolicy from './pages/Privacy';
+import AboutUs from './pages/About';
 const App = () => {
     const { user } = useSelector((state) => state.auth);
 
@@ -41,8 +47,31 @@ const App = () => {
                         path="/profile" 
                         element={user ? <Profile /> : <Navigate to="/login" />} 
                     />
-
-                   
+                       <Route 
+                        path="/refund" 
+                        element={<RefundJourney/>} 
+                    />
+                    
+                    <Route 
+                        path="/contact" 
+                        element={<ContactUs/>} 
+                    />
+                    <Route 
+                        path="/rules" 
+                        element={<RulesPage/>} 
+                    />
+                     <Route 
+                        path="/help" 
+                        element={<HelpCenter/>} 
+                    />
+                    <Route 
+                        path="/privacy" 
+                        element={<PrivacyPolicy/>} 
+                    />
+                    <Route 
+                        path="/about" 
+                        element={<AboutUs/>} 
+                    />
                 </Routes>
             </div>
         </Router>
