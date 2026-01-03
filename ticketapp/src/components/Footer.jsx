@@ -103,28 +103,53 @@ const MainFooterSection = () => {
             <h2 className="text-3xl font-black text-indigo-500 mb-6">ECE TICKET</h2>
             <p className="text-gray-400 leading-relaxed">আমরা দিচ্ছি দেশের সেরা ও নিরাপদ টিকেট বুকিং অভিজ্ঞতা। আমাদের সাথেই থাকুন আপনার প্রতিটি সফরে।</p>
           </div>
-          <div>
-            <h4 className="font-black mb-6 text-xl">লিঙ্কসমূহ</h4>
-            <ul className="space-y-4 text-gray-400">
-              <li onClick={() => (window.location.href = "/about")}  className="hover:text-indigo-400 cursor-pointer transition">আমাদের সম্পর্কে</li>
-              <li  onClick={() => (window.location.href = "/privacy")} className="hover:text-indigo-400 cursor-pointer transition">প্রাইভেসি পলিসি</li>
-              <li   onClick={() => (window.location.href = "/rules")}
- className="hover:text-indigo-400 cursor-pointer transition">শর্তাবলী</li>
-            </ul>
-          </div>
-          <div>
-            <h4  onClick={() => (window.location.href = "/contact")} className="font-black mb-6 text-xl">সাপোর্ট</h4>
-            <ul className="space-y-4 text-gray-400">
-              <li  onClick={() => (window.location.href = "/help")} className="hover:text-indigo-400 cursor-pointer transition">হেল্প সেন্টার</li>
-              <li
-  onClick={() => (window.location.href = "/refund")}
-  className="hover:text-indigo-400 cursor-pointer transition"
->
-  রিফান্ড পলিসি
-</li>              <li   onClick={() => (window.location.href = "/contact")}
- className="hover:text-indigo-400 cursor-pointer transition">যোগাযোগ</li>
-            </ul>
-          </div>
+
+
+<div>
+  <h4 className="font-black mb-6 text-xl">লিঙ্কসমূহ</h4>
+  <ul className="space-y-4 text-gray-400">
+    <li>
+      <Link to="/about" className="hover:text-indigo-400 cursor-pointer transition block">
+        আমাদের সম্পর্কে
+      </Link>
+    </li>
+    <li>
+      <Link to="/privacy" className="hover:text-indigo-400 cursor-pointer transition block">
+        প্রাইভেসি পলিসি
+      </Link>
+    </li>
+    <li>
+      <Link to="/rules" className="hover:text-indigo-400 cursor-pointer transition block">
+        শর্তাবলী
+      </Link>
+    </li>
+  </ul>
+</div>
+
+<div>
+  <h4 className="font-black mb-6 text-xl">
+    <Link to="/contact" className="hover:text-indigo-400 transition">
+      সাপোর্ট
+    </Link>
+  </h4>
+  <ul className="space-y-4 text-gray-400">
+    <li>
+      <Link to="/help" className="hover:text-indigo-400 cursor-pointer transition block">
+        হেল্প সেন্টার
+      </Link>
+    </li>
+    <li>
+      <Link to="/refund" className="hover:text-indigo-400 cursor-pointer transition block">
+        রিফান্ড পলিসি
+      </Link>
+    </li>
+    <li>
+      <Link to="/contact" className="hover:text-indigo-400 cursor-pointer transition block">
+        যোগাযোগ
+      </Link>
+    </li>
+  </ul>
+</div>
           <div>
             <h4 className="font-black mb-6 text-xl">নিউজলেটার</h4>
             {/* <div className="flex bg-white/5 p-2 rounded-2xl border border-white/10 focus-within:border-indigo-500 transition">
