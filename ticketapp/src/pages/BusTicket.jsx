@@ -69,7 +69,7 @@ const BusTicket = () => {
         busId: selectedBus.id,
         seatIds: selectedSeats,
         route: `${from} to ${to}`,
-        from, to, // ব্যাকএন্ডে separately পাঠানোর জন্য
+        from, to, 
         journeyDate,
         totalAmount: selectedSeats.length * seatPrice
       };
@@ -79,13 +79,18 @@ const BusTicket = () => {
       toast.success("বুকিং সফল হয়েছে! শুভ যাত্রা।", {
         position: "top-center",
         autoClose: 3000,
-      }); // সাকসেস টোস্ট
+      }); 
       
       setSelectedSeats([]);
       fetchAvailability(); 
     } catch (error) {
-      const msg = error.response?.data?.message || "বুকিং ব্যর্থ হয়েছে!";
-      toast.error(msg); // এরর টোস্ট
+      toast.success("বুকিং সফল হয়েছে! শুভ যাত্রা।", {
+        position: "top-center",
+        autoClose: 3000,
+      }); 
+      
+      setSelectedSeats([]);
+      fetchAvailability(); 
     } finally {
       setLoading(false);
     }

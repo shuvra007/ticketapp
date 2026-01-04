@@ -71,13 +71,7 @@ router.post('/book-seats', protect, async (req, res) => {
         });
 
         await newBooking.save();
-        await sendEmail(
-            user.email, 
-            "RUET Transit - Booking Confirmation", 
-            newBooking, // পুরো অবজেক্টটি otp প্যারামিটার হিসেবে যাবে
-         user.name, 
-            "booking"
-        );
+    
     
         res.status(201).json({ message: "বুকিং সফল হয়েছে!", booking: newBooking });
 
