@@ -47,12 +47,21 @@ const Navbar = () => {
                 <span>বাস টিকেট</span>
             </Link>
             <Link 
-                to="/air-tickets" 
+                to="/bus-tickets" 
                 onClick={onClick}
                 className={`${mobile ? 'flex items-center space-x-3 p-3 hover:bg-indigo-50 rounded-xl' : 'hover:text-indigo-600'} font-medium transition-colors`}
             >
                 {mobile && <span className="text-xl">✈️</span>}
                 <span>ফ্লাইট টিকেট</span>
+            </Link>
+             <Link 
+                to="/bus-tickets" 
+                onClick={onClick}
+
+                className={`${mobile ? 'flex items-center space-x-3 p-3 hover:bg-indigo-50 rounded-xl' : 'hover:text-indigo-600'} font-medium transition-colors`}
+            >
+                {mobile && <span className="text-xl">✈️</span>}
+                <span>ট্রেন টিকেট</span>
             </Link>
         </>
     );
@@ -75,7 +84,7 @@ const Navbar = () => {
                                 </svg>
                             </button>
                             <Link to="/" className="text-2xl font-black text-indigo-600 tracking-tighter flex items-center">
-                                ECE<span className="text-gray-800">TICKET</span>
+                                <span className="text-gray-800">E-Ticket Booking System</span>
                             </Link>
                         </div>
 
@@ -155,7 +164,7 @@ const Navbar = () => {
                             {/* Drawer Header */}
                             <div className="p-6 bg-indigo-600 text-white flex justify-between items-center">
                                 <div>
-                                    <h2 className="text-xl font-bold italic tracking-tight">ECE TICKET</h2>
+                                    <h2 className="text-xl font-bold italic tracking-tight">E-Ticket Booking System</h2>
                                     <p className="text-[10px] opacity-80 uppercase tracking-widest">Travel Made Easy</p>
                                 </div>
                                 <button 

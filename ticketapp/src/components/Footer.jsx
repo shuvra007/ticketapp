@@ -100,7 +100,7 @@ const MainFooterSection = () => {
       <footer className="pt-20 pb-10 border-t border-white/10 footer-glow">
         <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1 md:col-span-1">
-            <h2 className="text-3xl font-black text-indigo-500 mb-6">ECE TICKET</h2>
+            <h2 className="text-3xl font-black text-indigo-500 mb-6">E-Ticket Booking System</h2>
             <p className="text-gray-400 leading-relaxed">আমরা দিচ্ছি দেশের সেরা ও নিরাপদ টিকেট বুকিং অভিজ্ঞতা। আমাদের সাথেই থাকুন আপনার প্রতিটি সফরে।</p>
           </div>
 
@@ -169,7 +169,7 @@ const MainFooterSection = () => {
           </div>
         </div>
         <div className="text-center pt-10 border-t border-white/5 text-gray-500 text-sm">
-          © {new Date().getFullYear()} ECE TICKET - সর্বস্বত্ব সংরক্ষিত।
+          © {new Date().getFullYear()} E-Ticket Booking System- সর্বস্বত্ব সংরক্ষিত।
         </div>
       </footer>
     </div>
