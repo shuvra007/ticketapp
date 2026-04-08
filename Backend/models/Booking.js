@@ -9,6 +9,9 @@ const bookingSchema = new mongoose.Schema({
     seatIds: [{ type: Number, required: true }],
     busType: { type: String, required: true },
     totalAmount: { type: Number, required: true },
+
+    isCheckedIn: { type: Boolean, default: false },
+
     bookedAt: { type: Date, default: Date.now }
 });
 

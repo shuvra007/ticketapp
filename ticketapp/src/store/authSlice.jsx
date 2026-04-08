@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_URL = 'https://ticketapp-od6i.onrender.com/api/auth';
+const API_URL = 'http://localhost:5000/api/auth';
 
 export const login = createAsyncThunk('auth/login', async (userData, thunkAPI) => {
     try {

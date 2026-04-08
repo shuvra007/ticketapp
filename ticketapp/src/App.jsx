@@ -13,12 +13,14 @@ import VerifyOtp from './pages/VerifyOtp';
 import Navbar from './components/Navbar'; 
 import Home from './pages/Home';      
 import BusTicket from './pages/BusTicket';
+import TrainBooking from './pages/trainTicket';
 import RefundJourney from './pages/Refund';
 import ContactUs from './pages/Contact';
 import RulesPage from './components/Rule';
 import HelpCenter from './pages/Help';
 import PrivacyPolicy from './pages/Privacy';
 import AboutUs from './pages/About';
+import MyTickets from './pages/myticket';
 const App = () => {
     const { user } = useSelector((state) => state.auth);
 
@@ -31,12 +33,12 @@ const App = () => {
                 <Routes>
                     <Route 
                         path="/register" 
-                        element={!user ? <Register /> : <Navigate to="/todos" />} 
+                        element={!user ? <Register /> : <Navigate to="/" />} 
                     />
                     <Route path="/" element={<Home />} />
                     <Route 
                         path="/login" 
-                        element={!user ? <Login /> : <Navigate to="/todos" />} 
+                        element={!user ? <Login /> : <Navigate to="/profile" />} 
                     />
                     <Route path="/bus-tickets" element={<BusTicket />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -51,7 +53,15 @@ const App = () => {
                         path="/refund" 
                         element={<RefundJourney/>} 
                     />
+                    <Route 
+                        path="/train-tickets" 
+                        element={<TrainBooking/>} 
+                    />
                     
+                     <Route 
+                        path="/my-tickets" 
+                        element={user ? <MyTickets /> : <Navigate to="/" />} 
+                    />
                     <Route 
                         path="/contact" 
                         element={<ContactUs/>} 
