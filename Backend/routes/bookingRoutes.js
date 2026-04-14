@@ -4,7 +4,8 @@ const Booking = require('../models/Booking');
 const { protect } = require('../middlewares/authMiddleware');
 const sendEmail = require('../mailser');
 const User = require('../models/User');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
+const chromium = require('@sparticuz/chromium');
 router.get('/availability', async (req, res) => {
     try {
         const { busId, date, from, to } = req.query;
@@ -96,7 +97,13 @@ router.post('/book-seats', protect, async (req, res) => {
     }
 });
 
+// আপনার ফাইলের একদম ওপরে এই দুটি লাইন আছে কিনা নিশ্চিত করুন:
+// const puppeteer = require('puppeteer-core');
+// const chromium = require('@sparticuz/chromium');
+
 router.get('/download/:id', protect, async (req, res) => {
+    let browser; // finally ব্লকে ব্রাউজার ক্লোজ করার জন্য ভেরিয়েবলটি বাইরে রাখা হলো
+    
     try {
         const ticket = await Booking.findById(req.params.id);
 
@@ -109,7 +116,7 @@ router.get('/download/:id', protect, async (req, res) => {
         });
 
         // ==========================================
-        // 🌟 THE PREMIUM HTML & CSS TEMPLATE
+        // 🌟 THE PREMIUM HTML & CSS TEMPLATE (BUS VERSION)
         // ==========================================
         const htmlContent = `
             <!DOCTYPE html>
@@ -141,12 +148,12 @@ router.get('/download/:id', protect, async (req, res) => {
                         position: relative;
                     }
 
-                    /* Background Watermark */
+                    /* Background Watermark (Bus Icon) */
                     .watermark {
                         position: absolute;
                         top: 50%; left: 40%;
                         transform: translate(-50%, -50%);
-                        font-size: 300px;
+                        font-size: 250px;
                         opacity: 0.03;
                         z-index: 0;
                     }
@@ -166,7 +173,7 @@ router.get('/download/:id', protect, async (req, res) => {
                         display: flex;
                         justify-content: space-between;
                         align-items: center;
-                        border-bottom: 4px solid #fbbf24; /* Golden Border */
+                        border-bottom: 4px solid #fbbf24;
                     }
 
                     .header h1 { font-size: 24px; font-weight: 800; letter-spacing: 2px; }
@@ -174,7 +181,6 @@ router.get('/download/:id', protect, async (req, res) => {
 
                     .content { padding: 30px; }
 
-                    /* Animated-look Route Section */
                     .route-box {
                         display: flex;
                         align-items: center;
@@ -197,19 +203,19 @@ router.get('/download/:id', protect, async (req, res) => {
                         margin: 0 20px;
                         position: relative;
                     }
+                    /* Bus Icon in Divider */
                     .divider::after {
-                        content: '✈';
+                        content: '🚌';
                         position: absolute;
-                        top: -15px;
+                        top: -16px;
                         left: 50%;
                         transform: translateX(-50%);
-                        font-size: 24px;
+                        font-size: 22px;
                         color: #4f46e5;
                         background: #f8fafc;
                         padding: 0 10px;
                     }
 
-                    /* Details Grid */
                     .grid {
                         display: grid;
                         grid-template-columns: repeat(4, 1fr);
@@ -229,10 +235,9 @@ router.get('/download/:id', protect, async (req, res) => {
                     .label { font-size: 10px; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; }
                     .value { font-size: 16px; color: #0f172a; font-weight: 800; }
 
-                    /* Right Section: Tear-off Stub */
                     .stub-section {
                         width: 250px;
-                        background: #4f46e5; /* Primary Indigo */
+                        background: #4f46e5;
                         color: white;
                         padding: 30px;
                         display: flex;
@@ -242,7 +247,6 @@ router.get('/download/:id', protect, async (req, res) => {
                         z-index: 1;
                     }
 
-                    /* Cutout Circles for realism */
                     .cutout-top { position: absolute; top: -15px; left: -15px; width: 30px; height: 30px; background: #f1f5f9; border-radius: 50%; }
                     .cutout-bottom { position: absolute; bottom: -15px; left: -15px; width: 30px; height: 30px; background: #f1f5f9; border-radius: 50%; }
 
@@ -253,7 +257,6 @@ router.get('/download/:id', protect, async (req, res) => {
                     .stub-label { font-size: 9px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
                     .stub-value { font-size: 16px; font-weight: 800; margin-top: 2px; }
 
-                    /* Barcode Font */
                     .barcode {
                         font-family: 'Libre Barcode 39 Text', cursive;
                         font-size: 40px;
@@ -265,16 +268,16 @@ router.get('/download/:id', protect, async (req, res) => {
             </head>
             <body>
                 <div class="ticket-card">
-                    <div class="watermark">✈️</div>
+                    <div class="watermark">🚌</div>
                     
                     <div class="main-section">
                         <div class="header">
                             <div>
                                 <h1>E-Ticket Booking</h1>
-                                <p>STANDARD BOARDING PASS</p>
+                                <p>PREMIUM BUS TICKET</p>
                             </div>
                             <div style="text-align: right;">
-                                <p style="color: #fbbf24; font-weight: bold; font-size: 12px;">FIRST CLASS</p>
+                                <p style="color: #fbbf24; font-weight: bold; font-size: 12px;">PREMIUM CLASS</p>
                             </div>
                         </div>
 
@@ -301,8 +304,8 @@ router.get('/download/:id', protect, async (req, res) => {
                                     <div class="value">${journeyDate}</div>
                                 </div>
                                 <div class="info-box">
-                                    <div class="label">Bus/Flight Class</div>
-                                    <div class="value">${ticket.busType || 'Premium'}</div>
+                                    <div class="label">Coach Type</div>
+                                    <div class="value">${ticket.busType || 'AC Coach'}</div>
                                 </div>
                                 <div class="info-box gold">
                                     <div class="label">Total Paid</div>
@@ -312,7 +315,7 @@ router.get('/download/:id', protect, async (req, res) => {
 
                             <div style="margin-top: 20px; padding: 15px; background: #fef2f2; border-radius: 10px; border: 1px solid #fee2e2;">
                                 <p style="color: #ef4444; font-size: 11px; font-weight: 700;">
-                                    ⚠️ IMPORTANT: Gate closes 30 minutes before departure. Please carry a valid ID matching the booking details.
+                                    ⚠️ IMPORTANT: Please arrive at the boarding counter 30 minutes before departure. Carry a valid ID matching the booking details.
                                 </p>
                             </div>
                         </div>
@@ -323,7 +326,7 @@ router.get('/download/:id', protect, async (req, res) => {
                         <div class="cutout-bottom"></div>
 
                         <div class="stub-header">
-                            <h3>BOARDING</h3>
+                            <h3>BUS TICKET</h3>
                             <p style="font-size: 10px; opacity: 0.8;">PASSENGER COPY</p>
                         </div>
 
@@ -338,7 +341,7 @@ router.get('/download/:id', protect, async (req, res) => {
                         </div>
 
                         <div class="stub-info">
-                            <div class="stub-label">Seats / Berth</div>
+                            <div class="stub-label">Seat No(s)</div>
                             <div class="stub-value" style="color: #fbbf24; font-size: 22px;">${ticket.seatIds.join(', ')}</div>
                         </div>
 
@@ -352,32 +355,39 @@ router.get('/download/:id', protect, async (req, res) => {
         `;
 
         // ==========================================
-        // 🌟 LAUNCH PUPPETEER
+        // 🌟 LAUNCH PUPPETEER (Vercel & Local Setup)
         // ==========================================
-        const browser = await puppeteer.launch({ 
-            headless: "new",
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'] 
-        });
-        
+        console.log("PDF জেনারেট শুরু হচ্ছে...");
+
+        const options = {
+            args: chromium.args,
+            defaultViewport: chromium.defaultViewport,
+            executablePath: await chromium.executablePath(),
+            headless: chromium.headless,
+            ignoreHTTPSErrors: true,
+        };
+
+        // লোকাল পিসিতে চেক করার জন্য
+        if (!options.executablePath) {
+            options.executablePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+        }
+
+        browser = await puppeteer.launch(options);
         const page = await browser.newPage();
         
-        // waitUntil: 'networkidle0' নিশ্চিত করে যে আমাদের কাস্টম ফন্ট (Barcode & Fonts) লোড হয়েছে
         await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
         
-        // PDF কনফিগারেশন - Landscape ব্যবহার করছি যাতে পাসপোর্ট ডিজাইনের কার্ডটি সুন্দরভাবে ফিট হয়
         const pdfBuffer = await page.pdf({ 
             format: 'A4',
             landscape: true,
-            printBackground: true, // CSS Background Colors এবং Gradients প্রিন্ট করার জন্য
+            printBackground: true,
             margin: { top: '0', right: '0', bottom: '0', left: '0' }
         });
-        
-        await browser.close();
 
         // 🌟 Send back to frontend
         res.set({
             'Content-Type': 'application/pdf',
-            'Content-Disposition': `attachment; filename="ECE-Ticket-${ticket._id}.pdf"`,
+            'Content-Disposition': `attachment; filename="E-Ticket-${ticket._id}.pdf"`,
             'Content-Length': pdfBuffer.length
         });
 
@@ -386,6 +396,11 @@ router.get('/download/:id', protect, async (req, res) => {
     } catch (error) {
         console.error("Advanced PDF Error:", error);
         res.status(500).json({ message: "PDF জেনারেট করতে সমস্যা হয়েছে", error: error.message });
+    } finally {
+        // প্রসেস শেষ হলে ব্রাউজার ক্লোজ করা (খুবই গুরুত্বপূর্ণ)
+        if (browser) {
+            await browser.close();
+        }
     }
 });
 
