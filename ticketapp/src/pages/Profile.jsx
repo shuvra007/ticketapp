@@ -3,6 +3,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import api from '../autoapi';
 import { updateUser } from '../store/authSlice';
 import { toast } from 'react-toastify'; 
+
+// পুরনো ছবির জন্য এটি রাখা হলো, তবে Cloudinary এর ক্ষেত্রে এটি আর কাজে লাগবে না
 const PF = "http://localhost:5000/uploads/";
 
 const Profile = () => {
@@ -18,8 +20,11 @@ const Profile = () => {
     useEffect(() => {
         if (user?.user) {
             setName(user.user.name);
-            setPreview(user.user.profilePic 
-                ? `${PF}${user.user.profilePic}` 
+            
+            // 🟢 Cloudinary আপডেট: লিংকটি http দিয়ে শুরু হলে সরাসরি দেখাবে, নাহলে আগের লোকাল ফোল্ডার খুঁজবে
+            const profileImage = user.user.profilePic;
+            setPreview(profileImage 
+                ? (profileImage.startsWith('http') ? profileImage : `${PF}${profileImage}`) 
                 : 'https://cdn-icons-png.flaticon.com/512/149/149071.png');
         }
     }, [user]);

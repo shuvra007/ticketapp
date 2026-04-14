@@ -14,6 +14,13 @@ const Navbar = () => {
         window.location.href = '/login';
     };
 
+    // 🟢 Cloudinary আপডেট: লিংক চেক করার লজিকটি একবার লিখে সব জায়গায় ব্যবহার করা হলো
+    const profileImage = user?.user?.profilePic 
+        ? (user.user.profilePic.startsWith('http') 
+            ? user.user.profilePic 
+            : `https://ticketapp-od6i.onrender.com/uploads/${user.user.profilePic}`) 
+        : 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+
     // Framer Motion Variants
     const drawerVariants = {
         hidden: { x: '-100%', opacity: 0 },
@@ -36,7 +43,6 @@ const Navbar = () => {
     };
 
     // 🌟 কমন লিঙ্কগুলো (ডেস্কটপ ও মোবাইলের জন্য বাংলা)
-    // ডেস্কটপেও আইকন দেখানোর জন্য mobile প্রপসের কন্ডিশন থেকে আইকন হাইড করার লজিক সরানো হয়েছে
     const NavLinks = ({ onClick = () => {} }) => (
         <>
             <Link 
@@ -104,7 +110,7 @@ const Navbar = () => {
                                 <div className="flex items-center space-x-4 border-l pl-5">
                                     <Link to="/profile" className="flex items-center space-x-2 group">
                                         <img 
-                                            src={user?.user?.profilePic ? `https://ticketapp-od6i.onrender.com/uploads/${user.user.profilePic}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
+                                            src={profileImage}
                                             className="w-9 h-9 rounded-full border-2 border-indigo-500 object-cover" 
                                             alt="Profile"
                                         />
@@ -134,8 +140,8 @@ const Navbar = () => {
                         {user?.user && (
                             <Link to="/profile" className="md:hidden">
                                 <img 
-                                    src={user?.user?.profilePic ? `https://ticketapp-od6i.onrender.com/uploads/${user.user.profilePic}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
-                                    className="w-8 h-8 rounded-full border border-indigo-500" 
+                                    src={profileImage}
+                                    className="w-8 h-8 rounded-full border border-indigo-500 object-cover" 
                                     alt="User"
                                 />
                             </Link>
@@ -185,8 +191,8 @@ const Navbar = () => {
                                 {user?.user && (
                                     <div className="mb-6 p-4 bg-gray-50 rounded-2xl flex items-center space-x-3 border border-gray-100">
                                         <img 
-                                            src={user?.user?.profilePic ? `https://ticketapp-od6i.onrender.com/uploads/${user.user.profilePic}` : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
-                                            className="w-12 h-12 rounded-full border-2 border-indigo-100" 
+                                            src={profileImage}
+                                            className="w-12 h-12 rounded-full border-2 border-indigo-100 object-cover" 
                                             alt="User"
                                         />
                                         <div className="overflow-hidden">

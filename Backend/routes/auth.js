@@ -1,3 +1,4 @@
+require('dotenv').config()
 const router = require('express').Router();
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
@@ -7,20 +8,38 @@ const multer = require('multer');
 const { protect } = require('../middlewares/authMiddleware');
 const path = require('path');
 const sendEmail = require('../mailser');
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/'); 
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + '-' + file.originalname);
+
+// --- Cloudinary Setup Start ---
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const { error } = require('console');
+
+// Cloudinary Configuration (.env থেকে ডাটা নেবে)
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+
+// Cloudinary Storage Setup
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'ticket_app_users', // Cloudinary-তে এই নামে ফোল্ডার তৈরি হবে
+        allowed_formats: ['jpg', 'png', 'jpeg']
     }
 });
 
 const upload = multer({ storage: storage });
+// --- Cloudinary Setup End ---
+
+
 router.post('/register', upload.single('profilePic'), async (req, res) => {
     try {
         const { name, email, password } = req.body;
-        const profilePic = req.file ? req.file.filename : "";
+        // লোকাল ফাইলের বদলে Cloudinary-এর লিংকের জন্য req.file.path ব্যবহার করা হয়েছে
+        const profilePic = req.file ? req.file.path : "";
 
         let user = await User.findOne({ email });
         if (user) return res.status(400).json({ msg: "User already exists" });
@@ -47,8 +66,8 @@ router.post('/register', upload.single('profilePic'), async (req, res) => {
 
         res.status(201).json({ msg: "OTP sent to your email!" });
     } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+        console.log(error)
+        res.status(500).json({ error: err });    }
 });
 
 router.post('/verify-otp', async (req, res) => {
@@ -71,7 +90,7 @@ router.post('/verify-otp', async (req, res) => {
     }
 });
 
-router.post('/login',authLimiter, async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
@@ -89,7 +108,7 @@ router.post('/login',authLimiter, async (req, res) => {
     }
 });
 
-router.post('/forgot-password',resetPasswordLimiter, async (req, res) => {
+router.post('/forgot-password', resetPasswordLimiter, async (req, res) => {
     const { email } = req.body;
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ msg: "User not found" });
@@ -106,10 +125,10 @@ router.post('/forgot-password',resetPasswordLimiter, async (req, res) => {
         "verify"
     );
    
-        res.json({ msg: "Reset OTP sent to email" });
+    res.json({ msg: "Reset OTP sent to email" });
 });
 
-router.post('/reset-password',resetPasswordLimiter, async (req, res) => {
+router.post('/reset-password', resetPasswordLimiter, async (req, res) => {
     const { email, otp, newPassword } = req.body;
     const user = await User.findOne({ email, otp });
 
@@ -130,7 +149,8 @@ router.put('/update-profile', protect, upload.single('profilePic'), async (req, 
         const updateData = { name };
 
         if (req.file) {
-            updateData.profilePic = req.file.filename;
+            // লোকাল ফাইলের বদলে Cloudinary-এর লিংকের জন্য req.file.path ব্যবহার করা হয়েছে
+            updateData.profilePic = req.file.path;
         }
 
         const updatedUser = await User.findByIdAndUpdate(
