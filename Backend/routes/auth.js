@@ -53,21 +53,22 @@ router.post('/register', upload.single('profilePic'), async (req, res) => {
             password: hashedPassword,
             profilePic: profilePic,
             otp,
-            otpExpires: Date.now() + 3600000 
+            otpExpires: Date.now() + 3600000
         });
         await newUser.save();
         await sendEmail(
-            newUser.email, 
-            "Verify Your Account", 
-            otp, 
-            newUser.name, 
+            newUser.email,
+            "Verify Your Account",
+            otp,
+            newUser.name,
             "verify"
         );
 
         res.status(201).json({ msg: "OTP sent to your email!" });
     } catch (err) {
         console.log(error)
-        res.status(500).json({ error: err });    }
+        res.status(500).json({ error: err });
+    }
 });
 
 router.post('/verify-otp', async (req, res) => {
@@ -101,8 +102,8 @@ router.post('/login', authLimiter, async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-        res.json({ token, user: { id: user._id, name: user.name, email: user.email, profilePic: user.profilePic } });
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        res.json({ token, user: { id: user._id, name: user.name, email: user.email, profilePic: user.profilePic, role: user.role } });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -118,13 +119,13 @@ router.post('/forgot-password', resetPasswordLimiter, async (req, res) => {
     user.otpExpires = Date.now() + 3600000;
     await user.save();
     await sendEmail(
-        user.email, 
-        "Verify Your Account", 
-        otp, 
-        user.name, 
+        user.email,
+        "Verify Your Account",
+        otp,
+        user.name,
         "verify"
     );
-   
+
     res.json({ msg: "Reset OTP sent to email" });
 });
 
@@ -143,6 +144,17 @@ router.post('/reset-password', resetPasswordLimiter, async (req, res) => {
     res.json({ msg: "Password reset successful" });
 });
 
+router.get('/me', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password');
+        if (!user) return res.status(404).json({ msg: "User not found" });
+        // Cleanly returning exact payload strictly matched to localStorage structures
+        res.json({ id: user._id, name: user.name, email: user.email, profilePic: user.profilePic, role: user.role });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 router.put('/update-profile', protect, upload.single('profilePic'), async (req, res) => {
     try {
         const { name } = req.body;
@@ -154,8 +166,8 @@ router.put('/update-profile', protect, upload.single('profilePic'), async (req, 
         }
 
         const updatedUser = await User.findByIdAndUpdate(
-            req.user.id, 
-            { $set: updateData }, 
+            req.user.id,
+            { $set: updateData },
             { new: true }
         ).select('-password');
 

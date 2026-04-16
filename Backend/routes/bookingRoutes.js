@@ -6,14 +6,21 @@ const sendEmail = require('../mailser');
 const User = require('../models/User');
 const puppeteer = require('puppeteer-core');
 const chromium = require('@sparticuz/chromium');
+const SSLCommerzPayment = require('sslcommerz-lts');
+
+// পেমেন্টের ক্রেডেনশিয়াল আপডেট করা হয়েছে
+const store_id = process.env.STORE_ID || "demo69e1200379b1c";
+const store_passwd = process.env.STORE_PASSWORD || "demo69e1200379b1c@ssl";
+const is_live = false;
+
 router.get('/availability', async (req, res) => {
     try {
         const { busId, date, from, to } = req.query;
-        
+
         // ওই নির্দিষ্ট বাসের ওই তারিখের সব বুকিং খুঁজে বের করা
         const bookings = await Booking.find({ busId, journeyDate: date, from, to });
-        
-        // সব বুকিং থেকে সিট আইডিগুলো একটা অ্যারেতে নেওয়া
+
+        // সব বুকিং থেকে সিট আইডিগুলো একটা অ্যারেতে নেওয়া
         let bookedSeats = [];
         bookings.forEach(b => {
             bookedSeats = [...bookedSeats, ...b.seatIds];
@@ -24,21 +31,42 @@ router.get('/availability', async (req, res) => {
         res.status(500).json({ message: "Server Error", error: err.message });
     }
 });
+
 router.get('/my-tickets', protect, async (req, res) => {
     try {
-        // ইউজারের আইডি দিয়ে তার সব বুকিং খুঁজে বের করা এবং লেটেস্টগুলো আগে দেখানো
+        // ইউজারের আইডি দিয়ে তার সব বুকিং খুঁজে বের করা এবং লেটেস্টগুলো আগে দেখানো
         const tickets = await Booking.find({ userId: req.user.id }).sort({ createdAt: -1 });
-        
+
         if (!tickets) {
-            return res.status(404).json({ message: "কোনো টিকেট পাওয়া যায়নি" });
+            return res.status(404).json({ message: "কোনো টিকেট পাওয়া যায়নি" });
         }
 
         res.status(200).json({ tickets });
     } catch (err) {
         console.error("Fetch Tickets Error:", err.message);
-        res.status(500).json({ message: "টিকেট ফেচ করতে সমস্যা হয়েছে", error: err.message });
+        res.status(500).json({ message: "টিকেট ফেচ করতে সমস্যা হয়েছে", error: err.message });
     }
 });
+
+// API: Apply Coupon Module
+router.post('/apply-coupon', protect, async (req, res) => {
+    try {
+        const { couponCode, subtotal } = req.body;
+        if (!couponCode) {
+            return res.status(400).json({ message: "কোনো কুপন কোড দেওয়া হয়নি!" });
+        }
+
+        if (couponCode === "RUET20") {
+            const discountAmount = Math.ceil(subtotal * 0.20); // 20% discount
+            return res.json({ valid: true, discountAmount, finalAmount: subtotal - discountAmount });
+        } else {
+            return res.status(400).json({ message: "অকার্যকর বা মেয়াদোত্তীর্ণ কুপন কোড!" });
+        }
+    } catch (err) {
+        res.status(500).json({ message: "Server Error", error: err.message });
+    }
+});
+
 router.post('/book-seats', protect, async (req, res) => {
     console.log("User ID:", req.user.id);
     console.log("Body:", req.body);
@@ -46,19 +74,19 @@ router.post('/book-seats', protect, async (req, res) => {
     try {
         // ১. ফ্রন্টএন্ড থেকে route আসছে, তাই সেটিকে split করে from/to নিতে হবে অথবা সরাসরি route ব্যবহার করতে হবে।
         // আপনার ফ্রন্টএন্ড কোডে route: `${from} to ${to}` এভাবে আছে।
-        const { busId, seatIds, journeyDate, route, totalAmount } = req.body;
-        
+        const { busId, seatIds, journeyDate, route, totalAmount, busType, couponCode, paymentDetails } = req.body;
+
         // রুট থেকে from এবং to আলাদা করা (যদি আপনার মডেলে from/to আলাদা থাকে)
         const [from, to] = route.split(' to ');
 
         const userId = req.user.id; // 'const' বা 'let' যোগ করতে হবে
 
-        // ২. ডাবল বুকিং চেক করার সময় একই ফিল্ড ব্যবহার করুন
-        const existingBookings = await Booking.find({ 
-            busId, 
-            journeyDate, 
-            from, 
-            to 
+        // ২. ডাবল বুকিং চেক করার সময় একই ফিল্ড ব্যবহার করুন
+        const existingBookings = await Booking.find({
+            busId,
+            journeyDate,
+            from,
+            to
         });
 
         let alreadyBooked = [];
@@ -68,32 +96,158 @@ router.post('/book-seats', protect, async (req, res) => {
 
         const isTaken = seatIds.some(id => alreadyBooked.includes(id));
         if (isTaken) {
-            return res.status(400).json({ message: "দুঃখিত, এক বা একাধিক সিট ইতিমধ্যে বুক হয়ে গেছে!" });
+            return res.status(400).json({ message: "দুঃখিত, এক বা একাধিক সিট ইতিমধ্যে বুক হয়ে গেছে!" });
         }
 
         const user = await User.findById(req.user.id);
         if (!user) {
-            return res.status(404).json({ message: "ইউজার খুঁজে পাওয়া যায়নি!" });
+            return res.status(404).json({ message: "ইউজার খুঁজে পাওয়া যায়নি!" });
         }
-                const newBooking = new Booking({
+
+        // --- Payment & Coupon Verification (Backend) ---
+        // 1. Recalculate base price
+        const calcBusType = busType || "Standard";
+        const seatPrice = calcBusType === 'AC' ? 1200 : 800; // default prices matching frontend logic
+        let calculatedSubtotal = seatIds.length * seatPrice;
+        let finalAmount = calculatedSubtotal;
+
+        let appliedCoupon = "";
+        // 2. Validate Coupon and apply discount
+        if (couponCode === "RUET20") {
+            const discount = Math.ceil(calculatedSubtotal * 0.20);
+            finalAmount -= discount;
+            appliedCoupon = "RUET20";
+        }
+
+        // 3. Mock Payment Processing Validation
+        if (!paymentDetails || !paymentDetails.cardNumber || !paymentDetails.expiry || !paymentDetails.cvv) {
+            return res.status(400).json({ message: "পেমেন্ট তথ্য অসম্পূর্ণ! অনুগ্রহ করে কার্ডের তথ্য দিন।" });
+        }
+
+        // Simulating Payment Success & Generating Mock Transaction ID
+        const mockTransactionId = "TXN" + Date.now() + Math.random().toString().substring(2, 6);
+
+        const newBooking = new Booking({
             userId,
             busId,
             seatIds,
             journeyDate,
-            from, 
+            from,
             to,
-            totalAmount,
-            busType: req.body.busType || "Standard" // যদি ফ্রন্টএন্ড থেকে না আসে তবে ডিফল্ট
+            totalAmount: finalAmount, // secure recalculation overrides frontend payload
+            busType: calcBusType,
+            couponApplied: appliedCoupon,
+            paymentStatus: "Pending", // Now it's pending until SSLCommerz webhook success
+            transactionId: mockTransactionId
         });
 
         await newBooking.save();
-    
-    
-        res.status(201).json({ message: "বুকিং সফল হয়েছে!", booking: newBooking });
+
+        const backend_url = process.env.BACKEND_URL || 'http://localhost:5000';
+
+        // SSLCommerz Initialization
+        const data = {
+            total_amount: finalAmount,
+            currency: 'BDT',
+            tran_id: mockTransactionId,
+            success_url: `${backend_url}/api/bookings/payment-success/${mockTransactionId}`,
+            fail_url: `${backend_url}/api/bookings/payment-fail/${mockTransactionId}`,
+            cancel_url: `${backend_url}/api/bookings/payment-cancel/${mockTransactionId}`,
+            ipn_url: `${backend_url}/api/bookings/payment-ipn`,
+            shipping_method: 'No',
+            product_name: 'Ticket',
+            product_category: 'Electronic',
+            product_profile: 'general',
+            cus_name: user.name,
+            cus_email: user.email,
+            cus_add1: 'Dhaka',
+            cus_add2: 'Dhaka',
+            cus_city: 'Dhaka',
+            cus_state: 'Dhaka',
+            cus_postcode: '1000',
+            cus_country: 'Bangladesh',
+            cus_phone: '01711111111',
+            cus_fax: '01711111111',
+            ship_name: user.name,
+            ship_add1: 'Dhaka',
+            ship_add2: 'Dhaka',
+            ship_city: 'Dhaka',
+            ship_state: 'Dhaka',
+            ship_postcode: 1000,
+            ship_country: 'Bangladesh',
+        };
+
+        // পেমেন্টের ক্রেডেনশিয়াল আপডেট করা হয়েছে
+        const actual_store_id = process.env.STORE_ID || "demo69e1200379b1c";
+        const actual_store_pass = process.env.STORE_PASSWORD || "demo69e1200379b1c@ssl";
+        const current_is_live = false;
+
+        console.log(`Initializing SSLCommerz -> Live Mode: ${current_is_live} | Store ID: ${actual_store_id}`);
+
+        try {
+            const sslcz = new SSLCommerzPayment(actual_store_id, actual_store_pass, current_is_live);
+            const apiResponse = await sslcz.init(data);
+
+            console.log("SSL Init Response Data:", apiResponse);
+
+            if (apiResponse?.GatewayPageURL) {
+                // Ensure dual compatibility for both 'paymentUrl' and 'url'
+                res.status(200).json({ status: "SUCCESS", paymentUrl: apiResponse.GatewayPageURL, url: apiResponse.GatewayPageURL });
+            } else {
+                console.error("SSL Error: No Gateway URL matched! Response:", apiResponse);
+                res.status(400).json({ status: "FAILED", message: "Failed to generate Gateway Page URL", details: apiResponse });
+            }
+        } catch (initErr) {
+            console.error("SSL Init Exception Block:", initErr);
+            res.status(500).json({ status: "FAILED", message: "Gateway Exception Failure", error: initErr.message });
+        }
 
     } catch (err) {
         console.error("Booking Error:", err.message);
-        res.status(500).json({ message: "বুকিং ব্যর্থ হয়েছে", error: err.message });
+        res.status(500).json({ message: "বুকিং ব্যর্থ হয়েছে", error: err.message });
+    }
+});
+
+// SSLCommerz Callbacks returning HTML for messaging back to the React window.
+router.post('/payment-success/:tranId', async (req, res) => {
+    try {
+        await Booking.updateOne({ transactionId: req.params.tranId }, { paymentStatus: "Paid" });
+        res.send(`
+            <html><body><script>
+                if(window.opener) window.opener.postMessage({ status: 'PAYMENT_SUCCESS', tranId: '${req.params.tranId}' }, '*');
+                window.close();
+            </script></body></html>
+        `);
+    } catch (err) {
+        res.status(500).json({ message: "Error completing transaction" });
+    }
+});
+
+router.post('/payment-fail/:tranId', async (req, res) => {
+    try {
+        await Booking.updateOne({ transactionId: req.params.tranId }, { paymentStatus: "Failed" });
+        res.send(`
+            <html><body><script>
+                if(window.opener) window.opener.postMessage({ status: 'PAYMENT_FAIL' }, '*');
+                window.close();
+            </script></body></html>
+        `);
+    } catch (err) {
+        res.status(500).json({ message: "Error completing transaction" });
+    }
+});
+
+router.post('/payment-cancel/:tranId', async (req, res) => {
+    try {
+        await Booking.updateOne({ transactionId: req.params.tranId }, { paymentStatus: "Cancelled" });
+        res.send(`
+            <html><body><script>
+                if(window.opener) window.opener.postMessage({ status: 'PAYMENT_CANCEL' }, '*');
+                window.close();
+            </script></body></html>
+        `);
+    } catch (err) {
+        res.status(500).json({ message: "Error completing transaction" });
     }
 });
 
@@ -102,8 +256,8 @@ router.post('/book-seats', protect, async (req, res) => {
 // const chromium = require('@sparticuz/chromium');
 
 router.get('/download/:id', protect, async (req, res) => {
-    let browser; // finally ব্লকে ব্রাউজার ক্লোজ করার জন্য ভেরিয়েবলটি বাইরে রাখা হলো
-    
+    let browser; // finally ব্লকে ব্রাউজার ক্লোজ করার জন্য ভেরিয়েবলটি বাইরে রাখা হলো
+
     try {
         const ticket = await Booking.findById(req.params.id);
 
@@ -111,8 +265,8 @@ router.get('/download/:id', protect, async (req, res) => {
             return res.status(404).json({ message: "টিকেট পাওয়া যায়নি" });
         }
 
-        const journeyDate = new Date(ticket.journeyDate).toLocaleDateString('en-US', { 
-            day: '2-digit', month: 'long', year: 'numeric' 
+        const journeyDate = new Date(ticket.journeyDate).toLocaleDateString('en-US', {
+            day: '2-digit', month: 'long', year: 'numeric'
         });
 
         // ==========================================
@@ -284,12 +438,12 @@ router.get('/download/:id', protect, async (req, res) => {
                         <div class="content">
                             <div class="route-box">
                                 <div class="city">
-                                    <h2>${ticket.from.substring(0,3).toUpperCase()}</h2>
+                                    <h2>${ticket.from.substring(0, 3).toUpperCase()}</h2>
                                     <p>${ticket.from}</p>
                                 </div>
                                 <div class="divider"></div>
                                 <div class="city">
-                                    <h2>${ticket.to.substring(0,3).toUpperCase()}</h2>
+                                    <h2>${ticket.to.substring(0, 3).toUpperCase()}</h2>
                                     <p>${ticket.to}</p>
                                 </div>
                             </div>
@@ -297,7 +451,7 @@ router.get('/download/:id', protect, async (req, res) => {
                             <div class="grid">
                                 <div class="info-box">
                                     <div class="label">Passenger ID</div>
-                                    <div class="value">${ticket.userId.toString().substring(0,8).toUpperCase()}</div>
+                                    <div class="value">${ticket.userId.toString().substring(0, 8).toUpperCase()}</div>
                                 </div>
                                 <div class="info-box">
                                     <div class="label">Date</div>
@@ -332,7 +486,7 @@ router.get('/download/:id', protect, async (req, res) => {
 
                         <div class="stub-info">
                             <div class="stub-label">Route</div>
-                            <div class="stub-value">${ticket.from.substring(0,3).toUpperCase()} ➔ ${ticket.to.substring(0,3).toUpperCase()}</div>
+                            <div class="stub-value">${ticket.from.substring(0, 3).toUpperCase()} ➔ ${ticket.to.substring(0, 3).toUpperCase()}</div>
                         </div>
 
                         <div class="stub-info">
@@ -374,10 +528,10 @@ router.get('/download/:id', protect, async (req, res) => {
 
         browser = await puppeteer.launch(options);
         const page = await browser.newPage();
-        
+
         await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-        
-        const pdfBuffer = await page.pdf({ 
+
+        const pdfBuffer = await page.pdf({
             format: 'A4',
             landscape: true,
             printBackground: true,
@@ -409,10 +563,10 @@ router.put('/check-in/:id', protect, async (req, res) => {
         console.log("checked")
         const ticket = await Booking.findById(req.params.id);
         if (!ticket) return res.status(404).json({ message: "টিকেট পাওয়া যায়নি" });
-        
+
         ticket.isCheckedIn = true;
         await ticket.save();
-        
+
         res.json({ message: "Check-in successful", ticket });
     } catch (error) {
         res.status(500).json({ message: "চেক-ইন ব্যর্থ হয়েছে", error: error.message });

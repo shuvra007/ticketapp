@@ -7,7 +7,9 @@ const userSchema = new mongoose.Schema({
     isVerified: { type: Boolean, default: false },
     otp: { type: String },
     otpExpires: { type: Date },
-    profilePic: { type: String, default: "" }
+    profilePic: { type: String, default: "" },
+    role: { type: String, enum: ['user', 'admin'], default: 'user' },
+    isBanned: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model('User', userSchema);

@@ -9,6 +9,11 @@ const bookingSchema = new mongoose.Schema({
     seatIds: [{ type: Number, required: true }],
     busType: { type: String, required: true },
     totalAmount: { type: Number, required: true },
+    
+    // New fields for Coupon & Payment
+    couponApplied: { type: String, default: "" },
+    paymentStatus: { type: String, default: "Pending" },
+    transactionId: { type: String, default: "" },
 
     isCheckedIn: { type: Boolean, default: false },
 
